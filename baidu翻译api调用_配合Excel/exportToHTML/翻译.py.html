@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>翻译.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+翻译.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">random</span>
+<span class="s0">from </span><span class="s1">hashlib </span><span class="s0">import </span><span class="s1">md5</span>
+
+<span class="s0">import </span><span class="s1">openpyxl</span>
+<span class="s0">import </span><span class="s1">requests</span>
+
+
+<span class="s0">def </span><span class="s1">translate_text(text</span><span class="s0">, </span><span class="s1">from_lang</span><span class="s0">, </span><span class="s1">to_lang):</span>
+    <span class="s2"># Set your own appid/appkey.</span>
+    <span class="s1">appid = </span><span class="s3">'20230625001724138'</span>
+    <span class="s1">appkey = </span><span class="s3">'pwopu8lAz4mimvXcO2HX'</span>
+
+    <span class="s2"># For list of language codes, please refer to `https://api.fanyi.baidu.com/doc/21`</span>
+    <span class="s1">from_lang = from_lang</span>
+    <span class="s1">to_lang = to_lang</span>
+
+    <span class="s1">endpoint = </span><span class="s3">'http://api.fanyi.baidu.com'</span>
+    <span class="s1">path = </span><span class="s3">'/api/trans/vip/translate'</span>
+    <span class="s1">url = endpoint + path</span>
+
+    <span class="s1">query = text</span>
+
+    <span class="s2"># Generate salt and sign</span>
+    <span class="s0">def </span><span class="s1">make_md5(s</span><span class="s0">, </span><span class="s1">encoding=</span><span class="s3">'utf-8'</span><span class="s1">):</span>
+        <span class="s0">return </span><span class="s1">md5(s.encode(encoding)).hexdigest()</span>
+
+    <span class="s1">salt = random.randint(</span><span class="s4">32768</span><span class="s0">, </span><span class="s4">65536</span><span class="s1">)</span>
+    <span class="s1">sign = make_md5(appid + query + str(salt) + appkey)</span>
+
+    <span class="s2"># Build request</span>
+    <span class="s1">headers = {</span><span class="s3">'Content-Type'</span><span class="s1">: </span><span class="s3">'application/x-www-form-urlencoded'</span><span class="s1">}</span>
+    <span class="s1">payload = {</span><span class="s3">'appid'</span><span class="s1">: appid</span><span class="s0">, </span><span class="s3">'q'</span><span class="s1">: query</span><span class="s0">, </span><span class="s3">'from'</span><span class="s1">: from_lang</span><span class="s0">, </span><span class="s3">'to'</span><span class="s1">: to_lang</span><span class="s0">, </span><span class="s3">'salt'</span><span class="s1">: salt</span><span class="s0">, </span><span class="s3">'sign'</span><span class="s1">: sign}</span>
+
+    <span class="s2"># Send request</span>
+    <span class="s1">r = requests.post(url</span><span class="s0">, </span><span class="s1">params=payload</span><span class="s0">, </span><span class="s1">headers=headers)</span>
+    <span class="s1">result = r.json()</span>
+
+    <span class="s2"># get response</span>
+    <span class="s1">result = result[</span><span class="s3">'trans_result'</span><span class="s1">]</span>
+    <span class="s1">tempStr = </span><span class="s3">''</span>
+    <span class="s0">for </span><span class="s1">line </span><span class="s0">in </span><span class="s1">result:</span>
+        <span class="s1">tempStr += line[</span><span class="s3">'dst'</span><span class="s1">]</span>
+    <span class="s1">result = tempStr</span>
+    <span class="s0">return </span><span class="s1">result</span>
+
+
+<span class="s0">def </span><span class="s1">trans(inputPath</span><span class="s0">, </span><span class="s1">inputLie</span><span class="s0">, </span><span class="s1">outputLie</span><span class="s0">, </span><span class="s1">startRow=</span><span class="s4">1</span><span class="s0">, </span><span class="s1">outputPath=</span><span class="s0">None,</span><span class="s1">from_lang=</span><span class="s3">'en'</span><span class="s0">,</span><span class="s1">to_lang=</span><span class="s3">'zh'</span><span class="s1">):</span>
+    <span class="s2"># 加载 Excel 文件</span>
+    <span class="s1">workbook = openpyxl.load_workbook(inputPath)</span>
+    <span class="s1">worksheet = workbook.active</span>
+    <span class="s2"># 列和数字对应字典</span>
+    <span class="s1">dic = {</span><span class="s3">'A'</span><span class="s1">: </span><span class="s4">1</span><span class="s0">, </span><span class="s3">'B'</span><span class="s1">: </span><span class="s4">2</span><span class="s0">, </span><span class="s3">'C'</span><span class="s1">: </span><span class="s4">3</span><span class="s0">, </span><span class="s3">'D'</span><span class="s1">: </span><span class="s4">4</span><span class="s0">, </span><span class="s3">'E'</span><span class="s1">: </span><span class="s4">5</span><span class="s0">, </span><span class="s3">'F'</span><span class="s1">: </span><span class="s4">6</span><span class="s0">, </span><span class="s3">'G'</span><span class="s1">: </span><span class="s4">7</span><span class="s1">}  </span><span class="s2"># 修改字典对应的列序号</span>
+
+    <span class="s2"># 确保输入列和输出列存在于字典中</span>
+    <span class="s0">if not </span><span class="s1">{inputLie</span><span class="s0">, </span><span class="s1">outputLie}.issubset(dic):</span>
+        <span class="s0">raise </span><span class="s1">Exception(</span><span class="s3">&quot;输入错误&quot;</span><span class="s1">)</span>
+
+    <span class="s1">inputCol = dic[inputLie]  </span><span class="s2"># 列号，从1开始</span>
+    <span class="s1">outputCol = dic[outputLie]</span>
+
+    <span class="s2"># 确保目标列存在</span>
+    <span class="s1">max_column = worksheet.max_column  </span><span class="s2"># 获取表格的最大列号,列号从1开始</span>
+    <span class="s0">if </span><span class="s1">outputCol &gt; max_column:</span>
+        <span class="s2"># 如果目标列不存在，则添加一列，在第startRow行添加临时文本</span>
+        <span class="s1">worksheet.cell(row=startRow</span><span class="s0">, </span><span class="s1">column=outputCol</span><span class="s0">, </span><span class="s1">value=</span><span class="s3">'tempTxt'</span><span class="s1">)</span>
+    <span class="s2"># 逐行翻译并填写到 B 列</span>
+    <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">worksheet.iter_rows(min_row=startRow):</span>
+        <span class="s1">text_to_translate = row[inputCol - </span><span class="s4">1</span><span class="s1">].value</span>
+        <span class="s0">if </span><span class="s1">text_to_translate == </span><span class="s0">None</span><span class="s1">:</span>
+            <span class="s0">continue  </span><span class="s2"># 考虑到存在空格的情况</span>
+        <span class="s1">translated_text = translate_text(text_to_translate</span><span class="s0">, </span><span class="s1">from_lang</span><span class="s0">, </span><span class="s1">to_lang)</span>
+        <span class="s1">row[outputCol - </span><span class="s4">1</span><span class="s1">].value = translated_text</span>
+
+    <span class="s0">if </span><span class="s1">outputPath != </span><span class="s0">None</span><span class="s1">:</span>
+        <span class="s0">try</span><span class="s1">:</span>
+            <span class="s2"># 保存翻译结果到新文件</span>
+            <span class="s1">workbook.save(outputPath)</span>
+        <span class="s0">except</span><span class="s1">:</span>
+            <span class="s0">raise </span><span class="s1">Exception(</span><span class="s3">&quot;输出路径错误&quot;</span><span class="s1">)</span>
+    <span class="s0">else</span><span class="s1">:</span>
+        <span class="s2"># 保存翻译至原来文件</span>
+        <span class="s1">workbook.save(inputPath)</span>
+
+
+<span class="s1">trans(inputPath=</span><span class="s3">'temp.xlsx'</span><span class="s0">, </span><span class="s1">inputLie=</span><span class="s3">'A'</span><span class="s0">, </span><span class="s1">outputLie=</span><span class="s3">'B'</span><span class="s0">,</span>
+      <span class="s1">startRow=</span><span class="s4">1</span><span class="s0">, </span><span class="s1">outputPath=</span><span class="s3">'temp2.xlsx'</span><span class="s0">,</span><span class="s1">from_lang=</span><span class="s3">'en'</span><span class="s0">,</span><span class="s1">to_lang=</span><span class="s3">'zh'</span><span class="s1">)</span>
+</pre>
+</body>
+</html>
