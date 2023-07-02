@@ -8,8 +8,8 @@ import requests
 
 def translate_text(text, from_lang, to_lang):
     # Set your own appid/appkey.
-    appid = '20230625001724138'
-    appkey = 'pwopu8lAz4mimvXcO2HX'
+    appid = 'YOUR_APPID'
+    appkey = 'YOUR_APPKEY'
 
     # For list of language codes, please refer to `https://api.fanyi.baidu.com/doc/21`
     from_lang = from_lang
